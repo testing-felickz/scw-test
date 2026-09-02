@@ -12,6 +12,7 @@
 name: "CodeQL Advanced"
 
 on:
+  workflow_dispatch:
   push:
     branches: [ "main" ]
   pull_request:
@@ -97,4 +98,29 @@ jobs:
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v4
       with:
+        category: "/language:${{matrix.language}}"
+        upload: never
+        output: sarif-results
+
+    - name: Add Secure Code Warrior training
+      shell: pwsh
+      run: |
+        $sarifFiles = Get-ChildItem -Path sarif-results -Filter *.sarif -Recurse
+        if ($sarifFiles.Count -eq 0) {
+          throw 'CodeQL did not produce any SARIF files.'
+        }
+
+        foreach ($sarifFile in $sarifFiles) {
+          ./.github/scripts/add-scw-training.ps1 `
+            -InputPath $sarifFile.FullName `
+            -OutputPath $sarifFile.FullName `
+            -LanguageKey javascript `
+            -VideoRenderExperimentUrl 'https://github.com/user-attachments/assets/75245d63-43c2-4782-896a-05ac4fa4718f'
+        }
+
+    - name: Upload enriched SARIF
+      if: ${{ always() }}
+      uses: github/codeql-action/upload-sarif@v4
+      with:
+        sarif_file: sarif-results
         category: "/language:${{matrix.language}}"

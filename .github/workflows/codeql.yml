@@ -115,7 +115,7 @@ jobs:
             -InputPath $sarifFile.FullName `
             -OutputPath $sarifFile.FullName `
             -LanguageKey javascript `
-            -VideoRenderExperimentUrl 'https://media.securecodewarrior.com/v2/Module_52_Null_Dereference_v2.mp4'
+            -VideoRenderExperimentUrl 'https://github.com/user-attachments/assets/75245d63-43c2-4782-896a-05ac4fa4718f'
         }
 
     - name: Upload enriched SARIF

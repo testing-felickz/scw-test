@@ -98,3 +98,17 @@ jobs:
       uses: github/codeql-action/analyze@v4
       with:
         category: "/language:${{matrix.language}}"
+        upload: never
+        output: sarif-results
+
+    - name: Add Secure Code Warrior training
+      uses: SecureCodeWarrior/github-action-add-sarif-contextual-training@v1
+      with:
+        inputSarifFile: sarif-results
+        outputSarifFile: processed-sarifs
+
+    - name: Upload enriched SARIF
+      uses: github/codeql-action/upload-sarif@v4
+      with:
+        sarif_file: processed-sarifs
+        category: "/language:${{matrix.language}}"

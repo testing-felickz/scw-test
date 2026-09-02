@@ -8,7 +8,9 @@ param(
     [ValidateNotNullOrEmpty()]
     [string]$OutputPath,
 
-    [string]$LanguageKey
+    [string]$LanguageKey,
+
+    [string]$VideoRenderExperimentUrl
 )
 
 Set-StrictMode -Version Latest
@@ -214,6 +216,29 @@ foreach ($run in @(Get-PropertyValue $sarif 'runs')) {
 
             if ($markdownEntries.Count -eq 0) {
                 continue
+            }
+
+            if (-not [string]::IsNullOrWhiteSpace($VideoRenderExperimentUrl)) {
+                $experimentUrl = $VideoRenderExperimentUrl.Replace(' ', '%20')
+                $markdownEntries.Add(@"
+#### External video rendering experiment
+
+**1. Bare URL**
+
+$experimentUrl
+
+**2. Markdown media syntax**
+
+![]($experimentUrl)
+
+**3. HTML video**
+
+<video controls width="640" src="$experimentUrl"></video>
+
+**4. Link control**
+
+[Watch the Secure Code Warrior explainer video]($experimentUrl)
+"@)
             }
 
             $fullDescription = Get-PropertyValue $rule 'fullDescription'

@@ -1,0 +1,14 @@
+rules:
+  - id: javascript.dom-xss.innerhtml
+    message: User-controlled data is assigned to innerHTML.
+    severity: ERROR
+    languages:
+      - javascript
+      - typescript
+    metadata:
+      category: security
+      cwe:
+        - "CWE-79: Improper Neutralization of Input During Web Page Generation"
+      technology:
+        - browser
+    pattern: $ELEMENT.innerHTML = $VALUE

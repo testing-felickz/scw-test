@@ -1,0 +1,43 @@
+name: "OpenGrep with Secure Code Warrior"
+
+on:
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
+jobs:
+  scan:
+    name: OpenGrep
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Run OpenGrep
+        id: opengrep
+        uses: platform-sec/opengrep-action@4c19a88ebb98ab9fb77993cb6d16b078740fad1e
+        with:
+          patterns: .opengrep.yml
+          target: .
+          output-format: sarif
+          strict: false
+          opengrep-version: "1.29.0"
+
+      - name: Add Secure Code Warrior training
+        uses: forks-felickz/github-action-add-sarif-contextual-training@430280edf2eeb26391f771bafcb56e9a98e3ce9f
+        with:
+          inputSarifFile: ${{ steps.opengrep.outputs.sarif-file }}
+          outputSarifFile: opengrep.scw.sarif
+          languageKey: javascript
+
+      - name: Upload enriched SARIF
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: opengrep.scw.sarif
+          category: opengrep-scw

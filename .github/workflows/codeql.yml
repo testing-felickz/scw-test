@@ -98,3 +98,27 @@ jobs:
       uses: github/codeql-action/analyze@v4
       with:
         category: "/language:${{matrix.language}}"
+        upload: never
+        output: sarif-results
+
+    - name: Add Secure Code Warrior training
+      uses: forks-felickz/github-action-add-sarif-contextual-training@430280edf2eeb26391f771bafcb56e9a98e3ce9f
+      with:
+        inputSarifFile: sarif-results
+        outputSarifFile: processed-sarifs
+        languageKey: javascript
+
+    - name: Verify CodeQL identity and training
+      shell: bash
+      run: |
+        set -euo pipefail
+        for sarif in processed-sarifs/*.sarif; do
+          jq -e 'all(.runs[].tool.driver.name; . == "CodeQL")' "$sarif"
+          jq -e 'any(.runs[].tool.extensions[]?.rules[]?; (.help.markdown // "") | contains("Build your secure coding skills and defend your code"))' "$sarif"
+        done
+
+    - name: Upload enriched SARIF
+      uses: github/codeql-action/upload-sarif@v4
+      with:
+        sarif_file: processed-sarifs
+        category: "/language:${{matrix.language}}"
